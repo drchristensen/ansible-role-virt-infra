@@ -664,30 +664,49 @@ ansible-playbook \
 Once you have set up your infra, you could run another playbook against your
 same inventory to do whatever you wanted with those machines...
 
+Here's an example playbook called `update-hosts.yml` which uses the same
+inventory to update and reboot all nodes.
+
 ```yaml
 ---
-- name: Upgrade all packages
-  package:
-    name: '*'
-    state: latest
-  become: true
-  register: result_package_update
-  retries: 30
-  delay: 10
-  until: result_package_update is succeeded
+- hosts: all,!kvmhost
+  gather_facts: no
+  tasks:
+    - name: Upgrade all packages
+      package:
+        name: '*'
+        state: latest
+      become: true
+      register: result_package_update
+      retries: 30
+      delay: 10
+      until: result_package_update is succeeded
 
-- name: Install packages
-  package:
-    name:
-      - git
-      - tmux
-      - vim
-    state: present
-  become: true
-  register: result_package_install
-  retries: 30
-  delay: 10
-  until: result_package_install is succeeded
+    - name: Install packages
+      package:
+        name:
+          - git
+          - tmux
+          - vim
+        state: present
+      become: true
+      register: result_package_install
+      retries: 30
+      delay: 10
+      until: result_package_install is succeeded
+
+    - name: Reboot nodes after updates
+      reboot:
+      become: true
+```
+
+You could run it like this:
+
+```bash
+ansible-playbook \
+--ask-become-pass \
+--inventory ./inventory.d \
+./update-hosts.yml
 ```
 
 ## License
