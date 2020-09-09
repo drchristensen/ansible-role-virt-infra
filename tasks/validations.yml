@@ -121,8 +121,8 @@
     - name: "KVM host only: Set libvirtd security driver"
       lineinfile:
         path: /etc/libvirt/qemu.conf
-        insertafter: '^#security_driver ='
-        regexp: '^security_driver ='
+        insertafter: '^#\s*security_driver\s*='
+        regexp: '^security_driver\s*='
         line: 'security_driver = "{{ virt_infra_security_driver }}"'
       register: result_qemuconf
       when:
@@ -292,6 +292,16 @@
         - inventory_hostname in groups['kvmhost']
         - virt_infra_vbmc and virt_infra_vbmc_pip
       become: true
+
+    - name: "KVM host only: Find the path for virtualbmc"
+      shell: "which vbmc"
+      register: result_vbmc_path
+      when:
+        - inventory_hostname in groups['kvmhost']
+        - virt_infra_vbmc and virt_infra_vbmc_pip
+        - result_vbmc_pip is succeeded
+      run_once: true
+      changed_when: true
 
     - name: "KVM host only: Advise unable to install virtualbmc"
       set_fact:
