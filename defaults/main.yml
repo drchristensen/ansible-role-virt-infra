@@ -23,10 +23,16 @@ virt_infra_password: "password"
 virt_infra_ram: "1024"
 virt_infra_ram_max: "{{ virt_infra_ram }}"
 virt_infra_cpus: "1"
+virt_infra_cpu_features: ""
 virt_infra_cpus_max: "{{ virt_infra_cpus }}"
 virt_infra_cpu_model: "host-passthrough"
+virt_infra_cpu_numa: ""
+virt_infra_cpu_numa_cpus: ""
 virt_infra_machine_type: "q35"
 virt_infra_graphics: "spice"
+virt_infra_cpuset: "auto"
+virt_infra_numatune: ""
+virt_infra_memorybacking: ""
 
 # SSH keys are a list, you can add more than one
 # If not specified, we default to all public keys on KVM host

@@ -5,7 +5,15 @@
     virt-install
     --import
     --connect {{ hostvars[groups['kvmhost'][0]].virt_infra_host_libvirt_url | default(virt_infra_host_libvirt_url) }}
+    {% if virt_infra_cpu_numa is defined and virt_infra_cpu_numa %}
+    {% if virt_infra_cpu_features is defined and virt_infra_cpu_features %}
+    --cpu {{ virt_infra_cpu_model }},{{ virt_infra_cpu_features }},cell0.id=0,cell0.cpus={{ (range(0, virt_infra_cpus|int)|list)|join(',') }},cell0.memory={{ (virt_infra_ram|int * 1024) }}
+    {% else %}
+    --cpu {{ virt_infra_cpu_model }},cell0.id=0,cell0.cpus={{ (range(0, virt_infra_cpus|int)|list)|join(',') }},cell0.memory={{ (virt_infra_ram|int * 1024) }}
+    {% endif %}
+    {% else %}
     --cpu {{ virt_infra_cpu_model }}
+    {% endif %}
     --controller type=scsi,model=virtio-scsi,index=0
     {% set scsi_disk_count = [] %}
     {% set scsi_controller_count = [] %}
@@ -53,10 +61,19 @@
     --os-variant {{ virt_infra_variant }}
     {% endif %}
     --memory {{ virt_infra_ram }},maxmemory={{ virt_infra_ram_max }}
+    {% if virt_infra_memorybacking is defined and virt_infra_memorybacking %}
+    --memorybacking {{ virt_infra_memorybacking }}
+    {% endif %}
     --rng /dev/urandom
     --serial pty
     --sound none
     --vcpus {{ virt_infra_cpus }}{% if virt_infra_cpus_max is defined and virt_infra_cpus_max %},maxvcpus={{ virt_infra_cpus_max }}{% endif %}
+    {% if virt_infra_numatune is defined and virt_infra_numatune %}
+    --numatune {{ virt_infra_numatune }}
+    {% endif %}
+    {% if virt_infra_cpuset is defined and virt_infra_cpuset %}
+    --cpuset {{ virt_infra_cpuset }}
+    {% endif %}
     --virt-type kvm
   become: true
   register: result_vm_create
@@ -108,7 +125,7 @@
   register: result_get_ip
   until: result_get_ip.stdout
   retries: 30
-  delay: 10
+  delay: 30
   become: true
   delegate_to: "{{ groups['kvmhost'][0] }}"
   when:
