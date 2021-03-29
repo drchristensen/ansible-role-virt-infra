@@ -54,6 +54,7 @@ virt_infra_networks:
   - name: "default"
     type: "nat"
     model: "virtio"
+    queues: "1"
 
 # Disks, support various libvirt options
 # We generally don't set them though and leave it to hypervisor default
